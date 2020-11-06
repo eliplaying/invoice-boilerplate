@@ -1,50 +1,87 @@
 ---
-invoice-nr: 2015-11-04
-author: Max Mustermann
-city: Musterstadt
-from:
-- Musterstraße 37
-- 12345 Musterstadt
+date: today
+invoice-nr: 01
 to:
-- Erika Mustermann
-- Musterallee 1
-- 12345 Musterstadt
-- Germany
-VAT: 20
-service:
-- description: The first service provided
-  price: 320.00
-  details:
-- description: And another one, with a list of details
-  price: 245.00
-  details:
-    - Some more detailed explanation
-    - of the service provided
-    - Looking good
-- description: The last service provided
-  price: 65.00
+- Max Mustermann
+- Katzendorf 125
+- A-1446 Someplace
+
+############################### for no rates
+# service:
+# - description: "Erster Eintrag"
+#   price: 800.00
+#   details: 
+#    - "Entwurf, Konzept, Ausführung"
+# - description: "Reinzeichnung"
+#   price: 100.00
+#   details:
+#     - "Kundenkontakt, Formalisierung"
+# - description: "Rabatt"
+#   price: -125.00
+
+############################# for rates
+
+# rate-service:
+# - description: "Zweite Leistung"
+#   rate: 50.00
+#   units: 35
+#   details: 
+#    - "Details erste Leistung"
+# - description: "Zweite Leistung"
+#   rate: 50.00
+#   units: 5
+#   details:
+#     - Anpassung Warnsymbol Rufzeichen (Farbe, Position)
+#     - Kalender Einfärbung in Firmenfarben
+# - description: "Sonderrabatt"
+#   rate: -160.00
+#   units: 1
+
+bible: true
+daily-verse: "Halte dich nicht selbst für weise; fürchte den HERRN und weiche vom Bösen!"
+verse: "Sprüche 3,7"
+
+period: 1. September 2020 -- 2. Oktober 2020
+
 
 closingnote: |
-  Please transfer the due amount to the following bank account within the next 14 days:
+    Bezahlung bitte per Überweisung binnen 14 Tagen an folgendes Konto:
    
-    Mustermann GmbH  
-    Kreditinstitut: Deutsche Postbank AG  
-    IBAN: DE18 3601 0043 9999 9999 99  
-    BIC: PBNKDEFF  
+    **Herbert Binderstein  
+    Kreditinstitut: EINE BANK  
+    IBAN: AT12 1234 1234 2220 0031   
+    BIC: VFKGIEKS**  
 
-    We really appreciate your business and look forward to future projects together.
+    Herzliche Grüße,  
+    Herbert Binderstein
 
-    Best regards,
+# personal details
+author: Herbert Binderstein 
+city: Graz
+from:
+- MY ADRESS 125/3
+- 8010 GRAZ
+website:
+- "[example.com](www.example.com)"
+fromand:
+- "not-my-mail@example.com"
+- "+43123123123442"
+
+###### UST-Angaben
+UST-Befreit: true # Hinweis bzgl. Kleinunternehmerregelung
+# UST: 20
+# UID-NR: ATU99999999 # Alternatively you can add it to the fromlists or to fromand
 
 # Invoice settings
-currency: EUR
-# commasep: true
-lang: english
+currency: €
+commasep: true
+language: german
 
 # Typography and layout
-seriffont: Hoefler Text
-sansfont: Helvetica Neue
+seriffont: IBM Plex Mono
+sansfont: IBM Plex Sans
+monofont: IBM Plex Sans
 fontsize: 10pt
-geometry: a4paper, left=43mm, right=43mm, top=51mm, bottom=17mm
-# letterhead: true # To include personalized letterheads
+geometry: a4paper, left=38mm, right=38mm, top=51mm, bottom=35mm, headsep = 9mm, footskip = 17mm, ignoreall=true,
+letterhead: true # To include personalized letterheads
 ---

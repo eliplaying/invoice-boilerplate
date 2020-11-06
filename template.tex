@@ -9,7 +9,22 @@
 \geometry{$geometry$}
 
 % No page numbers
-\pagenumbering{gobble}
+%\pagenumbering{gobble}
+
+% give total page numbering
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+ 
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt} % no rulers in the header
+\renewcommand{\footrulewidth}{0pt} % no rulers in the footer
+\rfoot{\sffamily \footnotesize \thepage \hspace{1pt} / \pageref{LastPage}}
+
+\fancypagestyle{plain}{% this command is necessary, otherwise plain pages also have fancy headers!
+\fancyhf{} % clear all header and footer fields
+\fancyfoot[LE,RO]{\headerfont{\thepage}} %only print page numbers
+}
 
 % Left align
 \usepackage[document]{ragged2e}
@@ -51,22 +66,27 @@ $endif$
 % TABLE CUSTOMIZATION
 %--------------------------------
 \usepackage{spreadtab}
+\usepackage{tabularx, array}
 \usepackage[compact]{titlesec} % For customizing title sections
 \titlespacing*{\section}{0pt}{3pt}{-7pt} % Remove margin bottom from the title
 \usepackage{arydshln} % For the dotted line on the table
 \renewcommand{\arraystretch}{1.5} % Apply vertical padding to table cells
 \usepackage{hhline} % For single-cell borders
 \usepackage{enumitem} % For customizing lists
-\setlist{nolistsep} % No whitespace around list items
+\setlist{noitemsep, topsep=0mm} %{nolistsep} No whitespace around list items
 \setlist[itemize]{leftmargin=0.5cm} % Reduce list left indent
+$if(service)$
 \setlength{\tabcolsep}{9pt} % Larger gutter between columns
-
+$endif$
+$if(rate-service)$
+\setlength{\tabcolsep}{6pt} % Larger gutter between columns
+$endif$
 
 % LANGUAGE
 %--------------------------------
-$if(lang)$
+$if(language)$
 \usepackage{polyglossia}
-\setmainlanguage{$lang$}
+\setmainlanguage{$language$}
 $endif$
 
 % PDF SETUP
@@ -75,13 +95,18 @@ $endif$
 \hypersetup
 {
   pdfauthor={$author$},
-  pdfsubject=Invoice Nr. $invoice-nr$,
-  pdftitle=Invoice Nr. $invoice-nr$,
-  linkcolor=blue,
-  citecolor=blue,
+  pdfsubject=Rechnung Nr. $date$$invoice-nr$,
+  pdftitle=Rechnung Nr. $date$$invoice-nr$,
+  linkcolor=black,
+  citecolor=black,
   filecolor=black,
-  urlcolor=blue
+  urlcolor=black
 }
+
+\usepackage[]{xcolor}
+\definecolor{gray}{RGB}{120,120,120}
+\definecolor{yellow}{RGB}{249,178,51}
+
 
 % To display custom date
 % \usepackage[nodayofweek]{datetime}
@@ -89,14 +114,26 @@ $endif$
 % \date{\displaydate{date}}
 % Use this instead of \today: % \displaydate{date}
 
+% Custom Signature
+\usepackage{graphics, graphicx}
+\graphicspath{{figures/}{../figures/}}
+
 % DOCUMENT
 %--------------------------------
 \begin{document}
 \small
-\textsc{\textbf{$author$}}
+
+% \makebox[\textwidth][s]{%
+\textsc{\textbf{\uppercase{$author$}}}
 $for(from)$
 \textbullet{} \textsc{$from$}
-$endfor$
+$endfor$ \\
+% }
+$website$
+$for(fromand)$
+\textbullet{} {$fromand$}
+$endfor$ $if(UID-NR)$ \\
+  UID-Nr.: $UID-NR$ $endif$
 
 \vspace{1em}
 
@@ -105,48 +142,78 @@ $for(to)$
 $to$\\
 $endfor$
 
-\vspace{6em}
+\vspace{2em}
 
+% I've added this daily bible-verse to my invoice, I wanted to pass some bread of life ;-)
 \begin{flushright}
   \small
-  $city$, \today
+  $city$, \today $if(bible)$ \\[0.4em]
+  \begin{minipage}{5cm}
+    \begin{flushright}
+    % \color{gray}
+    \scriptsize \emph{»\,$daily-verse$\,«} \\[-0.5em]
+    \tiny -- {$verse$}, \href{https://www.bible.com/de/verse-of-the-day}{Tageslosung} \small 
+    \end{flushright}
+  \end{minipage} $endif$
 \end{flushright}
 
 \vspace{1em}
 
-
-\section*{\textsc{Invoice} \textsc{\#$invoice-nr$}}
+\section*{\textsc{RECHNUNG} \textsc{\#$date$$invoice-nr$}}
 \footnotesize
 \newcounter{pos}
 \setcounter{pos}{0}
 \STautoround*{2} % Get spreadtab to always display the decimal part
 $if(commasep)$\STsetdecimalsep{,}$endif$ % Use comma as decimal separator
 
-\begin{spreadtab}{{tabular}[t t t]{lp{8.2cm}r}}
-  \hdashline[1pt/1pt]
-  @ \noalign{\vskip 2mm} \textbf{Pos.} & @ \textbf{Description} & @ \textbf{Prices in $currency$} \\ \hline
+$if(service)$
+\begin{spreadtab}{{tabularx}{\textwidth}{l X r}}
+  \hdashline[2pt/2pt]
+  @ \noalign{\vskip 1mm} \textbf{Pos.} & @ \textbf{Beschreibung} & @ \textbf{Preis} \\ \hline
       $for(service)$ @ \noalign{\vskip 2mm} \refstepcounter{pos} \thepos 
         & @ $service.description$ 
         $if(service.details)$\newline \begin{itemize} 
           $for(service.details)$\scriptsize \item $service.details$ 
           $endfor$ \end{itemize}
-          $endif$ & $service.price$\\$endfor$ \noalign{\vskip 2mm} \hline
-  $if(VAT)$
-    @ & @ \multicolumn{1}{r}{Subtotal:}                & :={sum(c1:[0,-1])} \\ \hhline{~~-}
-    @ & @ \multicolumn{1}{r}{VAT $VAT$\%:}               & $VAT$/100*[0,-1] \\ \hhline{~~-}
+          $endif$ & :={$service.price$} $currency$ \\[-1em]$endfor$
+          @ \multicolumn{1}{r}{}\\[-3mm] \noalign{\vskip 2mm} \hline
+  $if(UST)$
+    @ & @ \multicolumn{1}{r}{Zwischensumme:}                & :={sum(c1:[0,-2])} $currency$   \\ \hhline{~~-}
+    @ & @ \multicolumn{1}{r}{UST $UST$\%:}                  & :={$UST$/100*[0,-1]} $currency$ \\ \hhline{~~-}
   $endif$
-  @ & @ \multicolumn{1}{r}{\textbf{Total:}}   & \textbf{:={$if(VAT)$[0,-1]+[0,-2]$else$sum(c1:[0,-1])$endif$}} \\ \hhline{~~-}
+  @ \multicolumn{2}{r}{$if(UST-Befreit)$ USt.-befreit – Kleinunternehmer gem. § 6 Abs. 1 Z 27 UStG \hfill $endif$ \textbf{Gesamt:}} & \textbf{:={$if(UST)$[0,-1]+[0,-2]$else$sum(c1:[0,-2])$endif$} $currency$} \\ \hhline{~~=}
 \end{spreadtab}
+$endif$
 
-
-\vspace{15mm}
+$if(rate-service)$
+  \begin{spreadtab}{{tabularx}{\textwidth}{l X rrr}}
+    \hdashline[2pt/2pt]
+    \noalign{\vskip 1mm} @ \textbf{Pos.} & @ \textbf{Beschreibung} & @ \textbf{Einh.} & @ \textbf{Satz} & @ \textbf{Summe} \\ \hline
+    $for(rate-service)$ @ \noalign{\vskip 2mm} \refstepcounter{pos} \thepos 
+    & @ $rate-service.description$ 
+    $if(rate-service.details)$\newline \begin{itemize} 
+      $for(rate-service.details)$\scriptsize \item $rate-service.details$ 
+      $endfor$ \end{itemize}
+      $endif$ & $rate-service.units$ & :={$rate-service.rate$} $currency$ & :={[-2,0]*[-1,0]} $currency$  \\[-1em]$endfor$ 
+      @ \multicolumn{1}{r}{}\\[-3mm] \noalign{\vskip 2mm} \hline
+  $if(UST)$
+    @ & @ \multicolumn{3}{r}{Zwischensumme:}                & :={sum(e1:[0,-2])} $currency$    \\ \hhline{~~~~-}
+    @ & @ \multicolumn{3}{r}{UST $UST$\%:}                  & :={$UST$/100*[0,-1]} $currency$  \\ \hhline{~~~~-}
+  $endif$
+  @ \multicolumn{4}{r}{$if(UST-Befreit)$ USt.-befreit – Kleinunternehmer gem. § 6 Abs. 1 Z 27 UStG \hfill $endif$ \textbf{Gesamt:}}   & \textbf{:={$if(UST)$[0,-1]+[0,-2]$else$sum(e1:[0,-2])$endif$} $currency$} \\ \hhline{~~~~=}
+  \end{spreadtab}
+$endif$
+\vspace{10mm}
 
 \sffamily
 \small
+Leistungszeitraum: $period$
+
 $closingnote$
 
-\medskip
+% add signature here
+%\includegraphics[scale=0.8]{signature2.jpg}
 
-$author$
+\vfill
 
 \end{document}
