@@ -4,70 +4,62 @@ Simple automated LaTeX invoicing system for freelancers.
 
 ## Intro
 
-Built along the lines of [cv-boilerplate](https://github.com/mrzool/cv-boilerplate) and [letter-boilerplate](https://github.com/mrzool/letter-boilerplate), this boilerplate contains the bare minimum to produce a professional-looking invoice with the least possible effort, so you can concentrate on things that matters.
+For detils see original creation, of which this is forked.
 
-![preview](preview.png)
+I've built this for my personal use, but I quite extended it so I thought some changes might be interesting to some, so I now fake-forked it afterwards (I'm no coder and new to git, so I didn't handle my initial forking properly... I'm sorry `:-(` )
 
-The invoice content lives in `details.yml` and it's structured like so:
+this template uses the IBM PLEX SANS and MONO, added some personal quirks, such as the possibility to include a bible verse, and made it possible to calculate rates... and adds the notice for small business use according to AUSTRIAN law.
 
-```YAML
-invoice-nr: 2015-11-04
-author: Max Mustermann
-city: Musterstadt
-from:
-- Musterstraße 37
-- 12345 Musterstadt
-to:
-- Erika Mustermann
-- Musterallee 1
-- 12345 Musterstadt
-- Germany
-VAT: 20
-service:
-- description: The first service provided
-  price: 450.00
-- description: And another one, with a list of details
-  price: 245.00
-  details:
-    - Some more detailed explanation
-    - of the service provided
-    - Looking good
-- description: The last service provided
-  price: 245.00
-```
+see examples, there's the possibility to create invoices with rates and without rates:
 
-When running `make`, [Pandoc](http://pandoc.org/) starts iterating on the YAML file, populates `template.tex` with your data, and pipes the result to XeTeX. XeTeX deals with the typesetting and compiles a PDF ready to be printed/faxed/emailed and archived (see the [output](output.pdf)).
+![With rates](readme_files/rates.png)
 
-The math gets handled internally by LaTeX through the `spreadtab` package, Excel-style (mad props to [clemens](http://tex.stackexchange.com/users/5049/clemens) on TeX SE for helping me out with this). You just need to provide a VAT rate and your prices, the boilerplate takes care of the rest.
+![Without rates](readme_files/norates.png)
 
-Unless you plan to edit the template, no particular LaTeX knowledge is required to use this boilerplate. If you need your invoice in a language other than English, finding the relevant strings in `template.tex` and translating them to your language should be easy enough.
+I've written a powershell script that copies all necessary files to another directory, performs the pandoc tasks there, then removes the files. this seperates the templating from the content-work.
+
+its in the "copy-to-your-working-directory" folder.
+
+otherwise use the make.ps1 file or make.sh file, or write your own makefile.
+I'm a programming noob and not a linux user, so I'm not familiar with makefiles yet... I just wrote a quick script in powershell, because that's what's easiest for me atm.
+
 
 ## Dependencies
 
-1. LaTeX with the following extra packages: `fontspec` `geometry` `ragged2e` `spreadtab` `fp` `xstring` `arydshln` `hhline` `titlesec` `enumitem` `xunicode` `xltxtra` `hyperref` `polyglossia` `wallpaper` `footmisc`
+1. LaTeX with the following extra packages: `fontspec` `geometry` `ragged2e` `spreadtab` `fp` `xstring` `arydshln` `hhline` `titlesec` `enumitem` `xunicode` `xltxtra` `hyperref` `polyglossia` `wallpaper` `footmisc`, **new**: , `array`, `tabularx`, also loaded currently but not actually in use in the document: `xcolor`, `graphics` and `graphicx`
 2. [Pandoc](http://pandoc.org/), the universal document converter.
 
 To install LaTeX on Mac OS X, I recommend getting the smaller version BasicTeX from [here](https://tug.org/mactex/morepackages.html) and installing the additional packages with `tlmgr` afterwards. Same goes for Linux: install `texlive-base` with your package manager and add the needed additional packages later.
 
 To install pandoc on Mac OS X, run `brew install pandoc`. To install it on Linux, refer to the [official docs](http://pandoc.org/installing.html).
 
-## Getting started
+## Getting started, optimal workflow with powershell
 
-1. Open `details.yml` with your text editor and fill it with your details, the invoice recipient's details, services/prices, and the desired settings.
-2. Run `make` to compile the PDF.
+1. The content is in the files "invoice.yaml" (here is example content, commented, but it should only include data that is the same for all your invoices!)
+2. then change the .md file, best use those in the "files_for_other_directories" folder
+3. copy these .md files somewhere where you want to have them and generate your pdfs
+4. copy make_invoice.ps1 somewhere to your path
+5. change the path in make_invoice.ps1 to the folder containing the template:
+   ![change_directory](readme_files/enter_template_directory_here.png)
+6. go to your working directory with your md file, run `make_invoice.ps1 myfilename.md` 
 
 **Note**: this template needs to be compiled with XeTeX.
 
-### Note for Windows users
+## use the files on linux and mac without powershell
 
-Although I didn't test it, you can probably use this on Windows, too. Both [Pandoc](http://pandoc.org/installing.html) and LaTeX can be installed on Windows (I recommend [MiKTeX](http://miktex.org/) for that) and you should be able to run makefiles on Windows through [Cygwin](https://www.cygwin.com/). If that's too much hassle, this command should do the trick in Powershell:
-
-    pandoc details.yml -o output.pdf --template=template.tex --pdf-engine=xelatex
+you need to have powershell installed (default on windows 10) to use the script aforementioned, otherwise you can just use the make.sh script on linux and macOS, though i have not tested it. there's also `make.ps1` which does the same in powershell.
 
 ## Available settings
 
-- **`VAT`**: Your VAT rate.
-- **`currency`**: Your currency code (USD, EUR...)
+*not all are documented, UST-Befreit is for small businesses in austria, it provides the legally required notice for VAT-exemption*
+
+- **`UST`**: your VAT rate, enables VAT calculation (but calls it UST for german/austrian UMSATZSTEUER)
+- **UST-befreit**: adds notice for small businesses according to AUSTRIAN law.
+- also new: for bible verses: `bible`, `verse`, `daily-verse`, `period`, extended `from` to `fromand` and `website`
+
+- ALSO: i expanded the previous `service` with `rate-service`, see the `.md` files for proper use.
+
+- **`currency`**: Your currency **in symbol, such as € or $**
 - **`commasep`**: Set to `true` to use a comma as decimal separator. This is for display purposes only—remember to always use a dot to set the prices in your YAML file.
 - **`lang`**: Sets the main language through the `polyglossia` package. This is important for proper hyphenation and date format.
 - **`seriffont`**: Used for the heading and the sender address. Hoefler Text is the default, but every font installed on your system should work out of the box (thanks, XeTeX!)
@@ -106,4 +98,8 @@ If you have already designed your own letterhead and want to use it with this te
 
 ## License
 
+for original document, the license is:
+
 [GPL](http://www.gnu.org/licenses/gpl-3.0.txt)
+
+the licensing for this document so far isn't stated, but it is as restricted as allowed by the initial GPL license, for as long as I haven't read and made this whole repo actually nice and useable.
